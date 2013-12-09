@@ -1,0 +1,2 @@
+#!/bin/zsh
+(cd $HOME/Dropbox/ruhoh-site; ruhoh server 9292)

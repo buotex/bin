@@ -1,0 +1,5 @@
+#!/bin/zsh
+pdflatex $1
+pdfname=`echo $1 | cut -d '.' -f1`.pdf
+echo $pdfname
+$LATEX_VIEWER $pdfname

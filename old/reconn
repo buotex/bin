@@ -1,0 +1,12 @@
+#!/bin/zsh
+case "$1" in
+	w) 
+		/etc/rc.d/rc.inet1 wlan0_restart
+		;;
+	e) 
+		/etc/rc.d/rc.inet1 eth0_restart
+		;;
+	*)
+		/etc/rc.d/rc.inet1 wlan0_restart
+		;;
+esac

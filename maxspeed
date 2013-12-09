@@ -1,0 +1,2 @@
+#!/bin/zsh
+sudo cpufreq-set -g performance

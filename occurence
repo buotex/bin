@@ -1,0 +1,13 @@
+#!/bin/zsh
+awk '
+{
+  for (i = 1; i <= NF; i++) {
+    occ[$2] = $1
+  }
+}
+END {
+ for (i in occ)
+    print i, occ[i]
+ 
+}' $* |
+sort

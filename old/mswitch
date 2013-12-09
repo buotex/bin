@@ -1,0 +1,12 @@
+#!/bin/zsh
+PREFIX=$MATLABHOME/licenses
+cd $PREFIX
+pwd
+if [ -e local.lic ] ; 
+then 
+	echo "blub"
+	rm local.lic; 
+	cp -l network.lic.bak network.lic; 
+else ; cp -l local.lic.bak local.lic; fi
+
+

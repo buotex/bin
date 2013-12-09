@@ -1,0 +1,9 @@
+#!/bin/zsh
+f=`realpath $1`
+#echo $f
+base=`basename $f`
+sudo cp -ib $f /home/bxu/conf/root/$base
+sudo chown bxu /home/bxu/conf/root/$base
+sudo chgrp users /home/bxu/conf/root/$base
+echo "/home/bxu/conf/root/$base $f" >> /home/bxu/conf/root/restore.conf
+

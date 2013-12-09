@@ -1,0 +1,2 @@
+#!/bin/zsh
+sshfs luca: /mnt/remote -o idmap=user -o uid=$(id -u) -o gid=$(id -g) 

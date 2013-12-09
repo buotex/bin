@@ -1,0 +1,7 @@
+#!/bin/zsh
+interface=$1
+if [ ! interface ] ; then 
+	interface=tun0
+fi
+ip=`/sbin/ifconfig $1 | grep 'inet' | grep '129' | tr -s ' ' | cut -d" " -f3`
+echo $ip

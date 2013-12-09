@@ -1,0 +1,9 @@
+#!/bin/sh
+list=/home/bxu/conf/root/restore.conf
+cat $list | while read one two
+do 
+	cp $one $two
+	chown root $two
+	chgrp root $two
+	echo $one $two
+done

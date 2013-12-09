@@ -1,0 +1,7 @@
+#!/bin/zsh
+if [[ -z $(setxkbmap -query | grep colemak) ]]; then 
+/usr/bin/setxkbmap us -variant colemak -option "ctrl:nocaps,terminate:ctrl_alt_bksp"
+else
+/usr/bin/setxkbmap us
+fi
+

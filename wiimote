@@ -1,0 +1,4 @@
+#!/bin/zsh
+#sudo xwiikeymap -d --left 108 --down 106 --right 103 --up 105 \
+sudo xwiikeymap -d --left 108 --down 106 --right 103 --up 105 \
+--one 44 --two 45 --plus 1 --b 46 

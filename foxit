@@ -1,0 +1,4 @@
+#!/bin/zsh
+filepath=$(winepath -w "$1")
+wine ~/.wine/drive_c/Program\ Files/Foxit\ Software/Foxit\ Reader/Foxit\ Reader.exe "${filepath}"
+

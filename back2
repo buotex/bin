@@ -1,0 +1,191 @@
+#!/bin/zsh
+USER_HOME=`/home/bxu/bin/.gethome`
+typeset -A mountpoints
+mountpoints[gurren]=/mnt/backup
+mountpoints[usb]=/media/usb
+mountpoints[sd]=/media/hd
+mountpoints[client]=~/.client-backup
+mountpoints[dump]=$USER_HOME/dump/backup
+
+
+samba_up() {
+	echo "mount -t cifs -o rw,user=bxu,lfs,username=${1},password=${2} ${3} /mnt/windows"
+	sudo mount -t cifs -o rw,user=bxu,username=${1},password=${2} ${3} /mnt/windows
+	if  [ $? -ne 0 ]; then
+		echo "missing permissions to mount"
+		exit 1
+	fi
+	sudo /sbin/losetup /dev/loop3 /mnt/windows/bigfile
+	sudo mount /dev/loop3 ${4}
+	echo "mounting ${4}"
+
+}
+
+samba_down() {
+	sudo sync
+	sudo umount -l ${1}
+	sudo sync
+	sudo /sbin/losetup -d /dev/loop3
+	sudo sync
+	echo "samba loop_down"
+	sudo umount -l /mnt/windows
+}
+gurren_up() {
+	echo "gurren up"
+	samba_login="Buote"
+	samba_pass=`openssl rsautl -decrypt -inkey $USER_HOME/.ssh/id_rsa -in $USER_HOME/conf/bxu/gurren.enc`
+	samba_dest='//192.168.1.2/backup'
+	mnt_folder=${1}
+
+	samba_up ${samba_login} ${samba_pass} ${samba_dest} ${mnt_folder}
+
+}
+
+gurren_down() {
+	echo "gurren_going_down"
+	samba_down ${1}
+
+}
+dump_up() {
+}
+dump_down(){
+}
+client_up() {
+  sshfs client:backup ~/.client-backup
+}
+
+client_down() {
+  fusermount -u ~/.client-backup
+}
+
+hci_up() {
+}
+
+
+
+hci_down() {
+
+}
+
+usb_up() {
+  echo "mounting ${1}"
+  mount ${1}
+}
+usb_down() {
+  echo "unmounting ${1}"
+  umount ${1}
+}
+sd_up() {
+  echo "mounting ${1}"
+  mount ${1}
+}
+sd_down() {
+  sync
+  echo "unmounting ${1}"
+  umount ${1}
+}
+
+
+push_home() {
+  rsync_flags=${2}
+  #echo `	rsync -avzR --delete --size-only --exclude-from=$USER_HOME/conf/bxu/excludehome $USER_HOME/ "${1}/"`
+  rm -rf "${1}/backuph.16"
+  for i in {15..02}; do 
+    next=`printf "%02d" $[${i}+1]`
+    mv "${1}/backuph.${i}" "${1}/backuph.${next}"
+    ; done
+    cp -alT "${1}/backuph.01" "${1}/backuph.02"
+    #archive, human-readable, verbose, compress, Relative
+    echo "rsync -ahzmRC --delete --delete-excluded ${rsync_flags} --progress --size-only --exclude-from=$USER_HOME/conf/bxu/excludehome $USER_HOME/./  ${1}/backuph.01/ "
+    rsync -ahzmRC --delete --delete-excluded ${rsync_flags} --progress --size-only --exclude-from=$USER_HOME/conf/bxu/excludehome "$USER_HOME/./" "${1}/backuph.01/"
+  }
+
+
+  pull_home() {
+
+    rsync -ahvzmuR --progress "${1}/backuph.1/./" "$USER_HOME"
+  }
+
+  push_root() {
+
+    sudo /sbin/lvremove -f /dev/vg/root_snap
+    currdate=$(date +%d-%m-%Y)
+    filename="${1}/root-$currdate.img.gz"
+    sudo /sbin/lvcreate -L20G -s -n root_snap /dev/vg/root
+    (sudo dd if=/dev/vg/root_snap bs=10M | gzip -5c > $filename) &
+#    watch du -h $filename &
+    sudo /sbin/lvremove -f /dev/vg/root_snap
+
+  }
+
+  src_arg=$2
+  flags=$3
+  up=sd_up
+  down=sd_down
+  pref='sd'
+  mode='push'
+  case "$1" in
+    *_up)
+
+      pref=`echo $1 | /bin/cut -d '_' -f 1`
+      up=${pref}_up
+      unset down
+      src_arg='mountonly'
+      echo "up=$up"
+      ;;
+    *_down)
+
+      pref=`echo $1 | /bin/cut -d '_' -f 1`
+      down=${pref}_down
+      unset up
+      src_arg='mountonly'
+      echo "down=$down"
+      ;;
+    to_*)
+      pref=`echo $1 | /bin/cut -d '_' -f 2`
+      up=${pref}_up
+      down=${pref}_down
+      echo "pref = ${pref}"
+      ;;
+    from_*)
+      mode='pull'
+      pref=`echo $1 | /bin/cut -d '_' -f 2`
+      up=${pref}_up
+      down=${pref}_down
+      ;;
+
+    *)
+      src_arg=$1
+      flags=$2
+      ;;
+  esac
+
+  case "$src_arg" in 
+    'mountonly')
+      unset src
+      ;;
+    'dry')
+      src=${mode}_home 
+      flags="-n"
+      ;;
+    'root')
+      src=${mode}_root
+      ;;
+    *)
+      src=${mode}_home 
+      flags=$src_arg
+      ;;
+  esac
+
+  #########
+  #RUNTIME#
+  #########
+  mountpoint=${mountpoints[$pref]}
+  #$down $mountpoint
+  #if [ ! -z "$down" ] ; then $down $mountpoint; fi
+  echo "up"
+  if [ ! -z "$up" ] ; then $up $mountpoint; fi
+  echo "do"
+  if [ ! -z "$src" ] ; then $src $mountpoint $flags; fi
+  echo "down"
+  if [ ! -z "$down" ] ; then $down $mountpoint; fi

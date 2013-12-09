@@ -1,0 +1,1 @@
+ethtool -s eth0 autoneg on

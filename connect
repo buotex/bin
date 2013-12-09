@@ -1,0 +1,2 @@
+minicom -S $HOME/conf/bxu/connect 
+tail /var/log/messages

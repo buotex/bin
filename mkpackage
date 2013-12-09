@@ -1,0 +1,20 @@
+#/bin/zsh
+FLAGS="$1"
+rm -r pkg
+mkdir pkg
+make DESTDIR=`pwd`/pkg install
+basedir=$(dirname ${PWD})
+filename=${PWD##*/}
+if [[ "$filename" == *build* ]] 
+then
+filename=$(basename ${basedir})
+fi
+cd pkg
+/sbin/makepkg --chown n --linkadd y -p /home/bxu/packages/${filename}.txz
+case "$FLAGS" in
+  'install')
+    sudo -u root -H /sbin/installpkg /home/bxu/packages/${filename}.txz
+    ;;
+  *)
+    ;;
+esac

@@ -1,0 +1,41 @@
+#!/bin/bash
+# check and log if a host is reachable by ping
+
+#CONFIGURATION
+
+#IP of host
+WATCH_IP="www.heise.de"
+#path to logfile
+LOGFILE="$HOME/watchip.log"
+#duration between pings
+PAUSE=2
+#how many failed pings before log
+TESTS=3
+
+#SCRIPT
+
+#initialize
+MISSED=0
+touch $LOGFILE
+
+while true; do
+  if ! ping -c 1 -w 1 $WATCH_IP > /dev/null; then
+    echo "missed"
+    ((MISSED++))
+  else
+    echo `date` '-' $WATCH_IP "is up again." >> $LOGFILE;
+    echo "successful"
+    MISSED=0
+  fi;
+  if [ $MISSED -ge $TESTS ]; then
+    echo `date` "-" $WATCH_IP "is down." >> $LOGFILE;
+    echo "sending"
+    echo `$HOME/bin/connect` > /dev/tty1 
+    echo `clear` > /dev/tty1
+    sleep $PAUSE;
+    sleep $PAUSE;
+    sleep $PAUSE;
+    reset
+  fi
+  sleep $PAUSE;
+done

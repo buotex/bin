@@ -1,0 +1,17 @@
+#!/bin/zsh
+case "$1" in
+  'dual')
+    xrandr --output LVDS1 --auto --output DisplayPort-0 --auto --right-of LVDS1 --output HDMI3 --auto --right-of LVDS1 --output HDMI1 --auto --above LVDS1 --dpi 125
+    ;;
+  'dualrot')
+    xrandr --output LVDS1 --auto --output DisplayPort-0 --rotate left --auto --right-of LVDS1 --output HDMI3 --rotate left --auto --right-of LVDS1 --dpi 125
+    ;;
+  'gaming')
+    xrandr  --output HDMI1 --auto --primary --output LVDS1 --off
+    ;;
+  *)
+    xrandr --output LVDS1
+    xrandr -s 1366x768
+    ;;
+esac
+xrandr --dpi 125

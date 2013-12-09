@@ -1,0 +1,2 @@
+#!/bin/zsh
+ssh -L 139:gorgonzola:139 bxu@hci07.iwr.uni-heidelberg.de

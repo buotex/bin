@@ -1,0 +1,72 @@
+#!/bin/zsh
+WanDevice=$1
+if [ -z "$WanDevice" ]; then echo "Wan not set, setting eth0"; WanDevice=eth0; fi
+echo Wan: $WanDevice
+IntDevice=$2
+if [ -z "$IntDevice" ]; then echo "Int not set, setting wlan0"; IntDevice=wlan0; fi
+echo Int: $IntDevice
+
+#DHCPCD_STRING=`ps aux | grep dhcpcd | grep $IntDevice`
+#echo ${DHCPCD_STRING} | awk '{print $2}' | xargs kill 
+#ifconfig $IntDevice STATIC
+
+TRAPINT() {
+echo "Cleaning up"
+killall dhcpd
+echo 0 > /proc/sys/net/ipv4/ip_forward
+iptables-restore < /home/bxu/conf/root/.backup_iptables
+killall hostapd
+
+sleep 5 
+case "$IntDevice" in 
+  wlan*)
+    iwconfig $IntDevice mode managed
+    ;;
+esac
+#dhcpcd $IntDevice &
+ifconfig $IntDevice DHCP
+killall router
+}
+#if [[ $WanDevice == e* ]]; then WanType="eth" ; fi
+#if [[ $WanDevice == w* ]]; then WanType="wlan" ; fi
+
+#if [[ $IntDevice == e* ]]; then WanType="eth" ; fi
+#if [[ $IntDevice == w* ]]; then WanType="wlan" ; fi
+
+
+
+
+ifconfig $IntDevice 192.168.0.1
+/usr/sbin/dhcpd
+echo 1 > /proc/sys/net/ipv4/ip_forward
+iptables -F
+iptables-save > /home/bxu/conf/root/.backup_iptables
+
+iptables -t nat -A POSTROUTING -o $WanDevice -j MASQUERADE
+
+iptables -A FORWARD -i $WanDevice -o $IntDevice -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i $IntDevice -o $WanDevice -j ACCEPT
+
+case "$IntDevice" in 
+  eth*)
+    ethtool -s $IntDevice autoneg on
+    ;; 
+  wlan*)
+    hostapd /home/bxu/conf/root/hostapd.conf &
+    ;;
+esac
+echo "arrived here"
+while true; do
+  sleep 1
+  echo -n "."
+done
+
+#sudo ethtool -s eth0 autoneg on
+#sudo /usr/sbin/dhcpd
+#echo 1 > /proc/sys/net/ipv4/ip_forward
+#iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+##internal: eth0
+#iptables -A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+#iptables -A FORWARD -i eth0 -o wlan0 -j ACCEPT
+##
+#iptables-restore < /root/iptables.conf

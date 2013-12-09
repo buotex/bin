@@ -1,0 +1,2 @@
+#!/bin/zsh
+ssh buote@192.168.1.2 rundll32.exe powrprof.dll,SetSuspendState Sleep &

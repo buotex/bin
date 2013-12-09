@@ -1,0 +1,2 @@
+#!/bin/zsh 
+quvi -f best --exec "mplayer %u" "http://www.90elf.de/"
