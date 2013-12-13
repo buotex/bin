@@ -1,6 +1,6 @@
 #!/bin/zsh
-prefix=$HOME/Dropbox/ruhoh-site/posts/
-for file in $HOME/Dropbox/ruhoh-site/posts/**/*.markdown 
+prefix=$HOME/blog/posts/
+for file in $HOME/blog/posts/**/*.markdown 
 do
   #echo `basename $file .markdown`
   jobname=`basename $file .markdown`
@@ -9,7 +9,7 @@ do
   if [[ ! -d pdf/$basedir ]]; then
     mkdir -p pdf/$basedir
   fi
-  sed -e s@{{urls.media}}@$HOME/Dropbox/ruhoh-site/media@g -e '1,/}/d' $file \
+  sed -e s@{{urls.media}}@$HOME/Dropbox/media@g -e '1,/^}/d' $file \
     | kramdown --template web -o latex | pdflatex -shell-escape -jobname=texput
   mv texput.pdf pdf/$basedir/$jobname.pdf
 done
