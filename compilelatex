@@ -9,7 +9,7 @@ do
   if [[ ! -d pdf/$basedir ]]; then
     mkdir -p pdf/$basedir
   fi
-  sed -e s@{{urls.media}}@$HOME/Dropbox/media@g -e '1,/^}/d' $file \
+  sed -e s@{{urls.media}}@$HOME/blog/media@g -r '1,/^}/d' $file \
     | kramdown --template web -o latex | pdflatex -shell-escape -jobname=texput
   mv texput.pdf pdf/$basedir/$jobname.pdf
 done
