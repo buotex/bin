@@ -9,7 +9,7 @@
 #
 
 require 'optparse'
-require 'kramdown'
+require '/home/bxu/blog/kramdown/lib/kramdown'
 
 options = {}
 format = ['html']
